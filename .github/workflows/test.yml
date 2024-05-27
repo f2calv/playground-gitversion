@@ -41,6 +41,12 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: gitversion dotnet (2 of 2)
+        run: |
+          dotnet tool update -g GitVersion.Tool
+          $HOME/.dotnet/tools/dotnet-gitversion ${{ github.workspace }} /nofetch > GitVersion.json
+          cat GitVersion.json
+
   gv-via-container: #fails
     runs-on: ubuntu-latest
     steps:
