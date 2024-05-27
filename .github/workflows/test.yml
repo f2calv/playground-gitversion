@@ -14,10 +14,48 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  test:
+  gv-via-actions:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - uses: gittools/actions/gitversion/setup@v1
+        with:
+          versionSpec: 5.x
+    
+      - uses: gittools/actions/gitversion/execute@v1
+        with:
+          useConfigFile: true
+          additionalArguments: /nofetch
+
+  gv-via-dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+  gv-via-container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+  
+      - run: |
+          git branch
+          docker run -v "${{ github.workspace }}:/repo" gittools/gitversion /repo /nofetch > GitVersion.json
+          # docker run --name gvtest --entrypoint "" -v "$(pwd):/repo" gittools/gitversion /bin/bash -c "git config --global --add safe.directory '*'; /tools/dotnet-gitversion /repo"
+          # # docker run --name gvtest -v "$(pwd):/repo" gittools/gitversion /repo /nofetch
+          # echo "test1"
+          # docker logs gvtest
+          # echo "test2"
+          # #docker run --rm -v "$(pwd):/repo" gittools/gitversion /repo /nofetch > GitVersion.json
+          # docker run --entrypoint "" -v "$(pwd):/repo" gittools/gitversion /bin/bash -c "git config --global --add safe.directory '*'; /tools/dotnet-gitversion /repo" > GitVersion.json
+          cat GitVersion.json
