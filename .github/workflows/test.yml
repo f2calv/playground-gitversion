@@ -47,7 +47,7 @@ jobs:
           $HOME/.dotnet/tools/dotnet-gitversion ${{ github.workspace }} /nofetch > GitVersion.json
           cat GitVersion.json
 
-  gv-via-container: #fails
+  gv-via-container: #fails with "ERROR: fatal: detected dubious ownership in repository at '/repo'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,17 +58,10 @@ jobs:
           docker run -v "${{ github.workspace }}:/repo" gittools/gitversion /repo /nofetch > GitVersion.json
           cat GitVersion.json
 
-  #fails with "ERROR: fatal: detected dubious ownership in repository at '/repo'"
-  gv-via-container-debug1:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-  
       - run: |
           docker run --name gvtest -v "${{ github.workspace }}:/repo" gittools/gitversion /repo /nofetch
           docker logs gvtest
+        if: always()
 
   #fails with "Gitversion could not determine which branch to treat as the development branch (default is 'develop') nor release-able branch (default is 'main' or 'master'), either locally or remotely. Ensure the local clone and checkout match the requirements or considering using 'GitVersion Dynamic Repositories'"
   gv-via-container-workaround1:
