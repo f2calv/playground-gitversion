@@ -41,7 +41,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-  gv-via-container:
+  gv-via-container: #fails
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,13 +49,27 @@ jobs:
           fetch-depth: 0
   
       - run: |
-          git branch
           docker run -v "${{ github.workspace }}:/repo" gittools/gitversion /repo /nofetch > GitVersion.json
-          # docker run --name gvtest --entrypoint "" -v "$(pwd):/repo" gittools/gitversion /bin/bash -c "git config --global --add safe.directory '*'; /tools/dotnet-gitversion /repo"
-          # # docker run --name gvtest -v "$(pwd):/repo" gittools/gitversion /repo /nofetch
-          # echo "test1"
-          # docker logs gvtest
-          # echo "test2"
-          # #docker run --rm -v "$(pwd):/repo" gittools/gitversion /repo /nofetch > GitVersion.json
-          # docker run --entrypoint "" -v "$(pwd):/repo" gittools/gitversion /bin/bash -c "git config --global --add safe.directory '*'; /tools/dotnet-gitversion /repo" > GitVersion.json
           cat GitVersion.json
+
+  gv-via-container-debug: #fails with unknown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+  
+      - run: |
+          docker run --name gvtest -v "${{ github.workspace }}:/repo" gittools/gitversion /repo /nofetch
+          docker logs gvtest
+
+  gv-via-container-debug2: #gets further but still fails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+  
+      - run: |
+          docker run --name gvtest --entrypoint "" -v "$(pwd):/repo" gittools/gitversion /bin/bash -c "git config --global --add safe.directory '*'; /tools/dotnet-gitversion /repo"
+          docker logs gvtest
