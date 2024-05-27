@@ -88,6 +88,8 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
+          #Note: "I'd be really interested to hear specific examples of how/where ref: ${{ github.event.pull_request.head.sha }} could get us in trouble... if you've got any."
+          #https://github.com/actions/checkout/issues/426#issuecomment-1881367421
   
       - run: |
           docker run --name gvtest --entrypoint "" -v "$(pwd):/repo" gittools/gitversion /bin/bash -c "git config --global --add safe.directory '*'; /tools/dotnet-gitversion /repo"
