@@ -4,7 +4,7 @@ branches:
     regex: ^main$
     tag: ''
   feature:
-    regex: ^features?[/-]
+    regex: ^(features|f2calv)?[/-]
     tag: useBranchName
 ignore:
   sha: []
