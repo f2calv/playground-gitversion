@@ -57,7 +57,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: printenv
+      - run: printenv | grep GITHUB.*=
   
       - run: |
           docker run -v "${{ github.workspace }}:/repo" gittools/gitversion:6.0.0-rc.1 /repo /nofetch > GitVersion.json
