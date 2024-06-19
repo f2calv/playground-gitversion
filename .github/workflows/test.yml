@@ -53,13 +53,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - run: printenv
   
       - run: |
-          docker run -v "${{ github.workspace }}:/repo" gittools/gitversion /repo /nofetch > GitVersion.json
+          docker run -v "${{ github.workspace }}:/repo" gittools/gitversion:6.0.0-rc.1/repo /nofetch > GitVersion.json
           cat GitVersion.json
 
       - run: |
-          docker run --name gvtest -v "${{ github.workspace }}:/repo" gittools/gitversion /repo /nofetch
+          docker run --name gvtest -v "${{ github.workspace }}:/repo" gittools/gitversion:6.0.0-rc.1 /repo /nofetch
           docker logs gvtest
         if: always()
 
