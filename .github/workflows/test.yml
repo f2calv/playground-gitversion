@@ -27,7 +27,7 @@ jobs:
     
       - uses: gittools/actions/gitversion/execute@v1
         with:
-          useConfigFile: true
+          useConfigFile: false
           additionalArguments: /nofetch
 
   gv-via-dotnet:
