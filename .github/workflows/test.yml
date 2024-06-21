@@ -55,11 +55,50 @@ jobs:
           fetch-depth: 0
 
       - run: printenv | grep GITHUB.*=
-  
+
+      #latest, no env
+      - run: |
+          docker run -v "$(pwd):/repo" gittools/gitversion /repo /nofetch > GitVersion.json
+          cat GitVersion.json
+        if: always()
+
+      #latest, no env, debug
+      - run: |
+          docker run --name gvtest -v "$(pwd):/repo" gittools/gitversion /repo /nofetch
+          docker logs gvtest
+        if: always()
+
+      #latest, env
+      - run: |
+          docker run -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion /repo /nofetch > GitVersion.json
+          cat GitVersion.json
+        if: always()
+
+      #latest, env, debug
+      - run: |
+          docker run --name gvtest -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion /repo /nofetch
+          docker logs gvtest
+        if: always()
+
+      #6.0.0-rc.1, no env
+      - run: |
+          docker run -v "$(pwd):/repo" gittools/gitversion:6.0.0-rc.1 /repo /nofetch > GitVersion.json
+          cat GitVersion.json
+        if: always()
+
+      #6.0.0-rc.1, no env, debug
+      - run: |
+          docker run --name gvtest -v "$(pwd):/repo" gittools/gitversion:6.0.0-rc.1 /repo /nofetch
+          docker logs gvtest
+        if: always()
+
+      #6.0.0-rc.1, env
       - run: |
           docker run -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion:6.0.0-rc.1 /repo /nofetch > GitVersion.json
           cat GitVersion.json
+        if: always()
 
+      #6.0.0-rc.1, env, debug
       - run: |
           docker run --name gvtest -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion:6.0.0-rc.1 /repo /nofetch
           docker logs gvtest
