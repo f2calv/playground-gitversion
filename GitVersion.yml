@@ -1,11 +1,5 @@
-mode: MainLine
-branches:
-  main:
-    regex: ^main$
-    tag: ''
-  feature:
-    regex: ^(features|f2calv)?[/-]
-    tag: useBranchName
+mode: Mainline
+branches: {}
 ignore:
   sha: []
 merge-message-formats: {}
