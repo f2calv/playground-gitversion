@@ -14,10 +14,68 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  test:
+  gv-via-actions:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - uses: gittools/actions/gitversion/setup@v1
+        with:
+          versionSpec: 5.x
+    
+      - uses: gittools/actions/gitversion/execute@v1
+        with:
+          useConfigFile: false
+          additionalArguments: /nofetch
+
+  gv-via-dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: gitversion dotnet (2 of 2)
+        run: |
+          dotnet tool update -g GitVersion.Tool
+          $HOME/.dotnet/tools/dotnet-gitversion ${{ github.workspace }} /nofetch > GitVersion.json
+          cat GitVersion.json
+
+            example_matrix:
+
+  gv-via-container:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config: [true, false]
+        tag: ["latest", "6.0.0-rc.1"]
+        env: ["", " -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }}"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - run: printenv | grep GITHUB.*=
+
+      - run: |
+          cat GitVersion.yml
+          rm GitVersion.yml
+        if: matrix.config == false
+
+      #latest, no env
+      - run: |
+          docker run -v "$(pwd):/repo"${{ matrix.env }} gittools/gitversion:${{ matrix.tag }} /repo /nofetch > GitVersion.json
+          cat GitVersion.json
+        if: always()
+
+      #latest, no env, debug
+      - run: |
+          docker run --name gvtest1 -v "$(pwd):/repo"${{ matrix.env }} gittools/gitversion:${{ matrix.tag }} /repo /nofetch
+          docker logs gvtest1
+        if: always()
