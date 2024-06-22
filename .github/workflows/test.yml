@@ -64,8 +64,8 @@ jobs:
 
       #latest, no env, debug
       - run: |
-          docker run --name gvtest -v "$(pwd):/repo" gittools/gitversion /repo /nofetch
-          docker logs gvtest
+          docker run --name gvtest1 -v "$(pwd):/repo" gittools/gitversion /repo /nofetch
+          docker logs gvtest1
         if: always()
 
       #latest, env
@@ -76,8 +76,8 @@ jobs:
 
       #latest, env, debug
       - run: |
-          docker run --name gvtest -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion /repo /nofetch
-          docker logs gvtest
+          docker run --name gvtest2 -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion /repo /nofetch
+          docker logs gvtest2
         if: always()
 
       #6.0.0-rc.1, no env
@@ -88,8 +88,8 @@ jobs:
 
       #6.0.0-rc.1, no env, debug
       - run: |
-          docker run --name gvtest -v "$(pwd):/repo" gittools/gitversion:6.0.0-rc.1 /repo /nofetch
-          docker logs gvtest
+          docker run --name gvtest3 -v "$(pwd):/repo" gittools/gitversion:6.0.0-rc.1 /repo /nofetch
+          docker logs gvtest3
         if: always()
 
       #6.0.0-rc.1, env
@@ -100,8 +100,8 @@ jobs:
 
       #6.0.0-rc.1, env, debug
       - run: |
-          docker run --name gvtest -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion:6.0.0-rc.1 /repo /nofetch
-          docker logs gvtest
+          docker run --name gvtest4 -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion:6.0.0-rc.1 /repo /nofetch
+          docker logs gvtest4
         if: always()
 
   #fails with "Gitversion could not determine which branch to treat as the development branch (default is 'develop') nor release-able branch (default is 'main' or 'master'), either locally or remotely. Ensure the local clone and checkout match the requirements or considering using 'GitVersion Dynamic Repositories'"
