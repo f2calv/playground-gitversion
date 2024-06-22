@@ -47,8 +47,15 @@ jobs:
           $HOME/.dotnet/tools/dotnet-gitversion ${{ github.workspace }} /nofetch > GitVersion.json
           cat GitVersion.json
 
-  gv-via-container: #fails with "ERROR: fatal: detected dubious ownership in repository at '/repo'"
+            example_matrix:
+
+  gv-via-container:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config: [true, false]
+        tag: ["latest", "6.0.0-rc.1"]
+        env: ["", " -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }}"]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,82 +63,19 @@ jobs:
 
       - run: printenv | grep GITHUB.*=
 
+      - run: |
+          cat GitVersion.yml
+          rm GitVersion.yml
+        if: matrix.config == false
+
       #latest, no env
       - run: |
-          docker run -v "$(pwd):/repo" gittools/gitversion /repo /nofetch > GitVersion.json
+          docker run -v "$(pwd):/repo"${{ matrix.env }} gittools/gitversion:${{ matrix.tag }} /repo /nofetch > GitVersion.json
           cat GitVersion.json
         if: always()
 
       #latest, no env, debug
       - run: |
-          docker run --name gvtest1 -v "$(pwd):/repo" gittools/gitversion /repo /nofetch
+          docker run --name gvtest1 -v "$(pwd):/repo"${{ matrix.env }} gittools/gitversion:${{ matrix.tag }} /repo /nofetch
           docker logs gvtest1
         if: always()
-
-      #latest, env
-      - run: |
-          docker run -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion /repo /nofetch > GitVersion.json
-          cat GitVersion.json
-        if: always()
-
-      #latest, env, debug
-      - run: |
-          docker run --name gvtest2 -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion /repo /nofetch
-          docker logs gvtest2
-        if: always()
-
-      #6.0.0-rc.1, no env
-      - run: |
-          docker run -v "$(pwd):/repo" gittools/gitversion:6.0.0-rc.1 /repo /nofetch > GitVersion.json
-          cat GitVersion.json
-        if: always()
-
-      #6.0.0-rc.1, no env, debug
-      - run: |
-          docker run --name gvtest3 -v "$(pwd):/repo" gittools/gitversion:6.0.0-rc.1 /repo /nofetch
-          docker logs gvtest3
-        if: always()
-
-      #6.0.0-rc.1, env
-      - run: |
-          docker run -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion:6.0.0-rc.1 /repo /nofetch > GitVersion.json
-          cat GitVersion.json
-        if: always()
-
-      #6.0.0-rc.1, env, debug
-      - run: |
-          docker run --name gvtest4 -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion:6.0.0-rc.1 /repo /nofetch
-          docker logs gvtest4
-        if: always()
-
-  #fails with "Gitversion could not determine which branch to treat as the development branch (default is 'develop') nor release-able branch (default is 'main' or 'master'), either locally or remotely. Ensure the local clone and checkout match the requirements or considering using 'GitVersion Dynamic Repositories'"
-  gv-via-container-workaround1:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-  
-      - run: |
-          docker run --name gvtest --entrypoint "" -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion:6.0.0-rc.1 /bin/bash -c "git config --global --add safe.directory '*'; /tools/dotnet-gitversion /repo"
-          docker logs gvtest
-
-  gv-via-container-workaround2:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        if: github.event_name != 'pull_request'
-        with:
-          fetch-depth: 0
-
-      - uses: actions/checkout@v4
-        if: github.event_name == 'pull_request'
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-          #Note: "I'd be really interested to hear specific examples of how/where ref: ${{ github.event.pull_request.head.sha }} could get us in trouble... if you've got any."
-          #https://github.com/actions/checkout/issues/426#issuecomment-1881367421
-  
-      - run: |
-          docker run --name gvtest --entrypoint "" -v "$(pwd):/repo" -e GITHUB_ACTIONS=true -e GITHUB_REF=${{ github.ref }} gittools/gitversion:6.0.0-rc.1 /bin/bash -c "git config --global --add safe.directory '*'; /tools/dotnet-gitversion /repo"
-          docker logs gvtest
