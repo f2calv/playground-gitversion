@@ -7,7 +7,7 @@ updates:
       interval: weekly
       time: "04:00"
 
-  - package-ecosystem: devcontainers
+  - package-ecosystem: pre-commit
     directory: /
     schedule:
       interval: weekly

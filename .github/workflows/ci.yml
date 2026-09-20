@@ -3,18 +3,52 @@ name: ci
 on:
   workflow_dispatch:
   push:
-    branches-ignore:
-      - "preview/**"
-    paths-ignore:
-      - .github/dependabot.yml
-      - LICENSE
-      - README.md
+    branches: [main]
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
 
 jobs:
+  lint:
+    uses: f2calv/gha-workflows/.github/workflows/lint.yml@v1
+    permissions:
+      contents: read
+
+  versioning:
+    uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
+    permissions:
+      contents: read
+    with:
+      tag-prefix: ''
+      tag-and-release: false
+
+  validate:
+    needs: versioning
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: validate GitVersion outputs
+        env:
+          VERSION: ${{ needs.versioning.outputs.version }}
+          MAJOR: ${{ needs.versioning.outputs.major }}
+          MINOR: ${{ needs.versioning.outputs.minor }}
+          PATCH: ${{ needs.versioning.outputs.patch }}
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]
+          [[ "$MAJOR.$MINOR.$PATCH" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+
   release:
+    needs: [lint, versioning, validate]
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     permissions:
       contents: write
+    with:
+      semVer: ${{ format('{0}.{1}.{2}', needs.versioning.outputs.major, needs.versioning.outputs.minor, needs.versioning.outputs.patch) }}
+      tag-prefix: ''
+      move-major-tag: false
